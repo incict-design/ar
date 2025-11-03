@@ -3,144 +3,84 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ARマーカー作成アプリ</title>
-  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.2/aframe/build/aframe-ar.js"></script>
+  <title>ARマーカー生成アプリ</title>
   <style>
     body {
-      font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
-      background: #f0f2f5;
+      font-family: 'Hiragino Sans', 'Yu Gothic', sans-serif;
+      background: #f7f8fa;
       margin: 0;
       padding: 0;
       text-align: center;
     }
-    h1 {
-      margin-top: 20px;
-      color: #333;
-    }
     #container {
+      max-width: 420px;
+      margin: 40px auto;
       background: white;
-      padding: 20px;
       border-radius: 12px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-      max-width: 400px;
-      margin: 20px auto;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      padding: 25px;
     }
-    input, button {
-      margin-top: 10px;
-      width: 100%;
-      padding: 10px;
-      border: none;
-      border-radius: 8px;
-      font-size: 1rem;
+    h1 {
+      font-size: 1.5rem;
+      margin-bottom: 10px;
     }
     input[type="file"] {
-      background: #eaeaea;
+      width: 100%;
+      padding: 10px;
+      margin: 15px 0;
     }
     button {
-      cursor: pointer;
       background: #007bff;
       color: white;
-      transition: 0.3s;
+      border: none;
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 5px;
     }
     button:hover {
       background: #0056b3;
     }
-    #arView {
-      width: 100%;
-      height: 100vh;
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      background: black;
-    }
-    #closeBtn {
-      position: fixed;
-      top: 10px;
-      right: 10px;
-      background: red;
-      color: white;
-      border: none;
-      padding: 10px 15px;
-      border-radius: 8px;
-      cursor: pointer;
-      display: none;
-      z-index: 9999;
+    p {
+      color: #555;
     }
   </style>
 </head>
 <body>
   <div id="container">
-    <h1>ARマーカー作成アプリ</h1>
-    <p>画像をアップロードすると、その画像をARマーカー上に表示します。</p>
-
+    <h1>ARマーカー生成アプリ</h1>
+    <p>画像をアップロードすると、NFTマーカー生成ページが開きます。</p>
     <input type="file" id="imageInput" accept="image/*">
-    <button id="generateBtn">ARマーカーを生成</button>
-    <button id="sampleBtn">サンプル画像でテスト</button>
+    <button id="generateBtn">マーカーを生成する</button>
   </div>
 
-  <button id="closeBtn">閉じる</button>
-  <div id="arView"></div>
-
   <script>
-    const imageInput = document.getElementById('imageInput');
-    const generateBtn = document.getElementById('generateBtn');
-    const sampleBtn = document.getElementById('sampleBtn');
-    const arView = document.getElementById('arView');
-    const closeBtn = document.getElementById('closeBtn');
-    const container = document.getElementById('container');
+    const input = document.getElementById("imageInput");
+    const button = document.getElementById("generateBtn");
 
-    // AR表示を生成する関数
-    function showARScene(imageURL) {
-      container.style.display = 'none';
-      arView.style.display = 'block';
-      closeBtn.style.display = 'block';
-
-      arView.innerHTML = `
-        <a-scene
-          embedded
-          vr-mode-ui="enabled: false"
-          arjs="sourceType: webcam; facingMode: environment; debugUIEnabled: false;"
-        >
-          <a-marker preset="hiro">
-            <a-image src="${imageURL}" width="2" height="2"></a-image>
-          </a-marker>
-          <a-entity camera></a-entity>
-        </a-scene>
-      `;
-
-      console.log("✅ ARシーン生成完了:", imageURL);
-    }
-
-    // 閉じるボタンで初期画面へ戻す
-    closeBtn.addEventListener('click', () => {
-      arView.innerHTML = "";
-      arView.style.display = 'none';
-      closeBtn.style.display = 'none';
-      container.style.display = 'block';
-    });
-
-    // 画像ファイルでAR表示
-    generateBtn.addEventListener('click', () => {
-      const file = imageInput.files[0];
+    button.addEventListener("click", async () => {
+      const file = input.files[0];
       if (!file) {
-        alert("画像ファイルを選択してください。");
+        alert("画像を選択してください。");
         return;
       }
+
+      // 画像をBase64に変換
       const reader = new FileReader();
-      reader.onload = e => showARScene(e.target.result);
+      reader.onload = e => {
+        const base64 = e.target.result;
+        const blob = new Blob([base64], { type: "text/plain" });
+        const url = URL.createObjectURL(blob);
+
+        // NFT Marker Creatorへリダイレクト
+        const generatorURL = "https://carnaux.github.io/NFT-Marker-Creator/#/";
+        alert("NFT Marker Creatorが開きます。そちらでマーカーを生成してください。");
+        window.open(generatorURL, "_blank");
+      };
       reader.readAsDataURL(file);
     });
-
-    // サンプル画像でテスト
-    sampleBtn.addEventListener('click', () => {
-      const sampleURL = "https://upload.wikimedia.org/wikipedia/commons/3/3f/ARjs_marker_HIRO.jpg";
-      showARScene(sampleURL);
-    });
-
-    // デバッグログ
-    console.log("📸 カメラ初期化を待機中...");
   </script>
 </body>
 </html>
