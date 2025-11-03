@@ -1,21 +1,21 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ARマーカー作成アプリ</title>
   <style>
     body {
       font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
+      background: #f5f5f5;
       margin: 0;
       padding: 2em;
-      background: #f5f5f5;
-      color: #333;
       text-align: center;
+      color: #333;
     }
     h1 { margin-bottom: 1em; }
     input[type="file"] {
-      margin-bottom: 1em;
+      margin: 1em 0;
     }
     button {
       margin: 0.5em;
@@ -27,34 +27,25 @@
       font-size: 1em;
       cursor: pointer;
     }
-    button:hover { background: #0056b3; }
-    iframe {
-      width: 100%;
-      height: 500px;
-      border: 1px solid #ccc;
-      margin-top: 1em;
-      background: white;
+    button:hover {
+      background: #0056b3;
     }
   </style>
 </head>
 <body>
   <h1>ARマーカー作成アプリ</h1>
-  <p>画像をアップロードして、その画像を表示するARマーカーを作成できます。</p>
+  <p>画像をアップロードすると、その画像を表示するARマーカーHTMLを生成します。</p>
 
   <input type="file" id="imageInput" accept="image/*"><br>
   <button id="generateBtn">生成</button>
   <button id="sampleBtn">サンプル画像でテスト</button>
 
-  <iframe id="previewFrame" title="ARプレビュー"></iframe>
-
   <script>
     const generateBtn = document.getElementById('generateBtn');
     const sampleBtn = document.getElementById('sampleBtn');
     const imageInput = document.getElementById('imageInput');
-    const previewFrame = document.getElementById('previewFrame');
 
-    // 生成関数
-    function generateAR(htmlImageSrc) {
+    function openARWindow(imageSrc) {
       const html = `
         <!DOCTYPE html>
         <html lang="ja">
@@ -68,37 +59,33 @@
         <body>
           <a-scene embedded arjs="sourceType: webcam;">
             <a-marker preset="hiro">
-              <a-image src="${htmlImageSrc}" rotation="-90 0 0" width="1" height="1"></a-image>
+              <a-image src="${imageSrc}" rotation="-90 0 0" width="1" height="1"></a-image>
             </a-marker>
             <a-entity camera></a-entity>
           </a-scene>
         </body>
         </html>
       `;
-      // iframeに安全に埋め込む
-      const blob = new Blob([html], { type: 'text/html' });
-      previewFrame.src = URL.createObjectURL(blob);
+      const blob = new Blob([html], { type: "text/html" });
+      const url = URL.createObjectURL(blob);
+      window.open(url, "_blank");
     }
 
-    // 画像アップロード処理
     generateBtn.addEventListener('click', () => {
       const file = imageInput.files[0];
       if (!file) {
-        alert('画像ファイルを選択してください。');
+        alert("画像ファイルを選択してください。");
         return;
       }
       const reader = new FileReader();
-      reader.onload = e => generateAR(e.target.result);
+      reader.onload = e => openARWindow(e.target.result);
       reader.readAsDataURL(file);
     });
 
-    // サンプル画像テスト
     sampleBtn.addEventListener('click', () => {
       const sampleURL = "https://raw.githubusercontent.com/AR-js-org/AR.js/master/three.js/data/images/HIRO.jpg";
-      generateAR(sampleURL);
+      openARWindow(sampleURL);
     });
   </script>
 </body>
 </html>
-
-
