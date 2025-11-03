@@ -11,10 +11,11 @@
       font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
       background: #f0f2f5;
       margin: 0;
-      padding: 20px;
+      padding: 0;
       text-align: center;
     }
     h1 {
+      margin-top: 20px;
       color: #333;
     }
     #container {
@@ -45,51 +46,76 @@
     button:hover {
       background: #0056b3;
     }
+    #arView {
+      width: 100%;
+      height: 100vh;
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      background: black;
+    }
+    #closeBtn {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      background: red;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: none;
+    }
   </style>
 </head>
 <body>
   <div id="container">
     <h1>ARマーカー作成アプリ</h1>
-    <p>画像をアップロードすると、その画像をARで表示できるマーカーを生成します。</p>
+    <p>画像をアップロードすると、その画像をARマーカーに重ねて表示します。</p>
 
     <input type="file" id="imageInput" accept="image/*">
     <button id="generateBtn">ARマーカーを生成</button>
     <button id="sampleBtn">サンプル画像でテスト</button>
   </div>
 
+  <button id="closeBtn">閉じる</button>
+
+  <div id="arView"></div>
+
   <script>
     const imageInput = document.getElementById('imageInput');
     const generateBtn = document.getElementById('generateBtn');
     const sampleBtn = document.getElementById('sampleBtn');
+    const arView = document.getElementById('arView');
+    const closeBtn = document.getElementById('closeBtn');
+    const container = document.getElementById('container');
 
-    // 画像をAR表示用HTMLに埋め込んで新しいウィンドウで開く関数
-    function openARWindow(imageURL) {
-      const html = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta charset="utf-8">
-        <title>AR表示</title>
-        <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.2/aframe/build/aframe-ar.js"></script>
-        <style>body { margin: 0; overflow: hidden; }</style>
-      </head>
-      <body>
+    // AR表示を生成する関数
+    function showARScene(imageURL) {
+      container.style.display = 'none';
+      arView.style.display = 'block';
+      closeBtn.style.display = 'block';
+
+      arView.innerHTML = `
         <a-scene embedded arjs>
           <a-marker preset="hiro">
             <a-image src="${imageURL}" width="2" height="2"></a-image>
           </a-marker>
           <a-entity camera></a-entity>
         </a-scene>
-      </body>
-      </html>
       `;
-      const blob = new Blob([html], { type: "text/html" });
-      const url = URL.createObjectURL(blob);
-      window.open(url, "_blank");
     }
 
-    // 画像をアップロードしてARマーカー生成
+    // 閉じるボタンで初期画面へ戻す
+    closeBtn.addEventListener('click', () => {
+      arView.innerHTML = "";
+      arView.style.display = 'none';
+      closeBtn.style.display = 'none';
+      container.style.display = 'block';
+    });
+
+    // 画像ファイルでAR表示
     generateBtn.addEventListener('click', () => {
       const file = imageInput.files[0];
       if (!file) {
@@ -97,14 +123,14 @@
         return;
       }
       const reader = new FileReader();
-      reader.onload = e => openARWindow(e.target.result);
+      reader.onload = e => showARScene(e.target.result);
       reader.readAsDataURL(file);
     });
 
     // サンプル画像でテスト
     sampleBtn.addEventListener('click', () => {
-      const sampleURL = "https://raw.githubusercontent.com/AR-js-org/AR.js/master/three.js/data/images/HIRO.jpg";
-      openARWindow(sampleURL);
+      const sampleURL = "https://upload.wikimedia.org/wikipedia/commons/3/3f/ARjs_marker_HIRO.jpg";
+      showARScene(sampleURL);
     });
   </script>
 </body>
