@@ -1,165 +1,165 @@
 <!doctype html>
 <html lang="ja">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>画像共有アプリ（誰でもアップロード可）</title>
-  <style>
-    body{
-      font-family:system-ui,-apple-system,"メイリオ",sans-serif;
-      padding:20px;
-      max-width:900px;
-      margin:0 auto
-    }
-    header{
-      display:flex;
-      align-items:center;
-      gap:12px;
-      margin-bottom:16px
-    }
-    .uploader{
-      display:flex;
-      gap:8px;
-      align-items:center;
-      flex-wrap:wrap
-    }
-    #gallery{
-      display:grid;
-      grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
-      gap:12px;
-      margin-top:20px
-    }
-    .card{
-      border:1px solid #ddd;
-      border-radius:8px;
-      padding:8px;
-      background:white
-    }
-    .card img{
-      width:100%;
-      height:160px;
-      object-fit:cover;
-      border-radius:6px
-    }
-    .meta{
-      font-size:12px;
-      color:#555;
-      margin-top:6px;
-      white-space:pre-line
-    }
-    #status{
-      font-size:13px;
-      color:#333
-    }
-    button{
-      cursor:pointer;
-      padding:8px 12px;
-      border-radius:6px;
-      border:1px solid #bbb;
-      background:#f7f7f7
-    }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>画像共有アプリ（誰でもアップロード可）</title>
+<style>
+body{
+  font-family:system-ui,-apple-system,"メイリオ",sans-serif;
+  padding:20px;
+  max-width:900px;
+  margin:0 auto;
+}
+header{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin-bottom:16px;
+}
+.uploader{
+  display:flex;
+  gap:8px;
+  align-items:center;
+  flex-wrap:wrap;
+}
+#gallery{
+  display:grid;
+  gap:12px;
+  grid-template-columns: repeat(4, 1fr); /* 最小4列 */
+  margin-top:20px;
+}
+.card{
+  border:1px solid #ddd;
+  border-radius:8px;
+  padding:8px;
+  background:white;
+  cursor:pointer;
+}
+.card img{
+  width:100%;
+  height:160px;
+  object-fit:cover;
+  border-radius:6px;
+  transition: transform 0.3s;
+}
+.card img:hover{
+  transform: scale(1.05);
+}
+.meta{
+  font-size:12px;
+  color:#555;
+  margin-top:6px;
+  white-space:pre-line;
+}
+#status{
+  font-size:13px;
+  color:#333;
+}
+button{
+  cursor:pointer;
+  padding:8px 12px;
+  border-radius:6px;
+  border:1px solid #bbb;
+  background:#f7f7f7;
+}
+
+/* レスポンシブ: 幅が広くなるほど列数増加 */
+@media(min-width: 1100px){ #gallery{ grid-template-columns: repeat(6,1fr); } }
+@media(min-width: 900px) and (max-width:1099px){ #gallery{ grid-template-columns: repeat(5,1fr); } }
+@media(max-width: 899px) and (min-width:700px){ #gallery{ grid-template-columns: repeat(4,1fr); } }
+@media(max-width: 699px) and (min-width:500px){ #gallery{ grid-template-columns: repeat(3,1fr); } }
+@media(max-width: 499px) and (min-width:350px){ #gallery{ grid-template-columns: repeat(2,1fr); } }
+@media(max-width: 349px){ #gallery{ grid-template-columns: repeat(1,1fr); } }
+</style>
 </head>
 <body>
-  <header>
-    <h1>Image-Share</h1>
-    <div id="status" style="margin-left:auto"></div>
-  </header>
 
-  <section class="uploader">
-    <label>投稿者名（必須）<br>
-      <input id="username" type="text" placeholder="">
-    </label>
-    <label>画像を選択<br>
-      <input id="fileInput" type="file" accept="image/*">
-    </label>
-    <button id="uploadBtn">アップロード</button>
-  </section>
+<header>
+  <h1>Image-Share</h1>
+  <div id="status" style="margin-left:auto"></div>
+</header>
 
-  <section>
-    <h2>共有ギャラリー</h2>
-    <div id="gallery"></div>
-  </section>
+<section class="uploader">
+  <label>投稿者名（必須）<br>
+    <input id="username" type="text" placeholder="">
+  </label>
+  <label>画像を選択<br>
+    <input id="fileInput" type="file" accept="image/*">
+  </label>
+  <button id="uploadBtn">アップロード</button>
+</section>
 
-  <!-- Firebase v8系 SDK -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+<section>
+  <h2>共有ギャラリー</h2>
+  <div id="gallery"></div>
+</section>
 
-  <script>
-    // Firebase設定
-    const firebaseConfig = {
+<!-- Firebase v8系 SDK -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+
+<script>
+const firebaseConfig = {
   apiKey: "AIzaSyCzDqI2YaOLoU4muurvvxBs4fOOSkH8Yew",
   authDomain: "image-share-89916.firebaseapp.com",
   projectId: "image-share-89916",
-  storageBucket: "image-share-89916.firebasestorage.app",
+  storageBucket: "image-share-89916.appspot.com",
   messagingSenderId: "859639070035",
   appId: "1:859639070035:web:aab7543659c3d1a877f5a6"
 };
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const storage = firebase.storage();
 
-    // Firebase初期化
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-    const storage = firebase.storage();
+const usernameInput = document.getElementById("username");
+const fileInput = document.getElementById("fileInput");
+const uploadBtn = document.getElementById("uploadBtn");
+const gallery = document.getElementById("gallery");
+const status = document.getElementById("status");
 
-    const usernameInput = document.getElementById("username");
-    const fileInput = document.getElementById("fileInput");
-    const uploadBtn = document.getElementById("uploadBtn");
-    const gallery = document.getElementById("gallery");
-    const status = document.getElementById("status");
+uploadBtn.addEventListener("click", async () => {
+  const name = usernameInput.value.trim();
+  const file = fileInput.files[0];
 
-    uploadBtn.addEventListener("click", async () => {
-      const name = usernameInput.value.trim();
-      const file = fileInput.files[0];
+  if(!name){ status.textContent="投稿者名を入力してください。"; return; }
+  if(!file){ status.textContent="画像を選択してください。"; return; }
 
-      // 投稿者名が未入力の場合はアップロード中止
-      if (!name) {
-        status.textContent = "投稿者名を入力してください。";
-        return;
-      }
+  uploadBtn.disabled = true;
+  status.textContent = "アップロード中...";
 
-      if (!file) {
-        status.textContent = "画像を選択してください。";
-        return;
-      }
+  try {
+    const ref = storage.ref("test-images/" + name + ".jpg");
+    await ref.put(file);
+    const url = await ref.getDownloadURL();
+    await db.collection("test-images").doc(name).set({ username:name, url:url, updatedAt:new Date() });
+    status.textContent = "アップロード完了！";
+    fileInput.value = "";
+  } catch(e) {
+    console.error(e);
+    status.textContent = "アップロード失敗。";
+  } finally { uploadBtn.disabled = false; }
+});
 
-      uploadBtn.disabled = true;
-      status.textContent = "アップロード中...";
-
-      try {
-        const ref = storage.ref("test-images/" + name + ".jpg");
-        await ref.put(file);
-        const url = await ref.getDownloadURL();
-
-        await db.collection("test-images").doc(name).set({
-          username: name,
-          url: url,
-          updatedAt: new Date()
-        });
-
-        status.textContent = "アップロード完了！";
-        fileInput.value = "";
-      } catch (e) {
-        console.error(e);
-        status.textContent = "アップロード失敗。";
-      } finally {
-        uploadBtn.disabled = false;
-      }
+// ギャラリー更新（リアルタイム）
+db.collection("test-images").onSnapshot(snapshot => {
+  gallery.innerHTML = "";
+  snapshot.forEach(doc => {
+    const data = doc.data();
+    const div = document.createElement("div");
+    div.className = "card";
+    div.innerHTML = `
+      <img src="${data.url}">
+      <div class="meta">${data.username}<br>${new Date(data.updatedAt.seconds*1000).toLocaleString()}</div>`;
+    // タップで拡大
+    div.querySelector("img").addEventListener("click", ()=>{
+      const w = window.open("");
+      w.document.write(`<img src="${data.url}" style="width:100%">`);
     });
-
-    // 共有ギャラリー更新（リアルタイム）
-    db.collection("test-images").onSnapshot(snapshot => {
-      gallery.innerHTML = "";
-      snapshot.forEach(doc => {
-        const data = doc.data();
-        const div = document.createElement("div");
-        div.className = "card";
-        div.innerHTML = `
-          <img src="${data.url}">
-          <div class="meta">${data.username}<br>${new Date(data.updatedAt.seconds * 1000).toLocaleString()}</div>`;
-        gallery.appendChild(div);
-      });
-    });
-  </script>
+    gallery.appendChild(div);
+  });
+});
+</script>
 </body>
 </html>
