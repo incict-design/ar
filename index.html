@@ -65,6 +65,7 @@ button{ cursor:pointer; padding:4px 10px; border-radius:6px; border:1px solid #b
 
 <!-- 共有ギャラリー -->
 <section>
+ 
   <div id="gallery"></div>
   <!-- ギャラリー下にファイル選択・アップロードボタン -->
   <div class="upload-row">
@@ -110,7 +111,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyDYMt_zTbQZ5TffPH88wWnpYNTfTzklqGs",
   authDomain: "image-fda5a.firebaseapp.com",
   projectId: "image-fda5a",
-  storageBucket: "image-fda5a.appspot.com",
+  storageBucket: "image-fda5a.firebasestorage.app",
   messagingSenderId: "755012980730",
   appId: "1:755012980730:web:39f15384f84588feba5e43"
 };
@@ -146,7 +147,7 @@ registerBtn.addEventListener("click", async () => {
     const userCredential = await auth.createUserWithEmailAndPassword(email, pass);
     await userCredential.user.updateProfile({displayName:displayName});
     await userCredential.user.sendEmailVerification();
-    alert("確認メールを送信しました。迷惑メールフォルダも確認してください。");
+    alert("確認メールを送信しました。メール内のリンクで認証してください。");
   }catch(e){ console.error(e); alert(e.message); }
 });
 
@@ -157,7 +158,7 @@ loginBtn.addEventListener("click", async ()=>{
   try{
     const userCredential = await auth.signInWithEmailAndPassword(email, pass);
     if(!userCredential.user.emailVerified){
-      alert("メール認証が完了していません。確認メールをチェックしてください。");
+      alert("メール認証が完了していません。迷惑メールフォルダも確認してください。");
       await auth.signOut();
       return;
     }
@@ -195,7 +196,7 @@ uploadBtn.addEventListener("click", async ()=>{
       url:url,
       updatedAt:new Date()
     });
-    status.textContent="アップロード完了！";
+    status.textContent="";
     fileInput.value="";
   }catch(e){ console.error(e); status.textContent="アップロード失敗"; }
   finally{ uploadBtn.disabled=false; }
